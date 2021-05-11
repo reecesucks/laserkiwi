@@ -17,6 +17,8 @@ var up = false;
 var down = false;
 var left = false;
 var right = false;
+var rotate_left = false;
+var rotate_right = false;
 
 //---------------
 //Preloading ...
@@ -49,8 +51,12 @@ var gameloop, facing, currX, currY, charX, charY, isMoving;
 //Laserkiwi sprite
 class LaserKiwi {
   constructor(xpos, ypos) {
-		let img = document.getElementById("LaserKiwi");
-		img.laserkiwi = document.getElementById("LaswerKiwi")
+		var img = new Image();
+		img.src = "../laserkiwi/img/laserkiwi.png";
+		this.img = new Image();
+		this.img = img;
+		//let img = document.getElementById("LaserKiwi");
+		//img.laserkiwi = document.getElementById("LaswerKiwi")
     this.xpos = xpos;
     this.ypos = ypos;
 		this.angle = 0;
@@ -60,22 +66,30 @@ class LaserKiwi {
 	 let bullet_img = document.getElementById("Bullet");
 	 bullet_img.bullet = document.getElementById("Bullet");
 	 bulletArray.push(bullet);
-	 console.log(bulletArray.length);
-	 ctx.drawImage(bullet_img.bullet, bullet.x, bullet.y)
+	}
+	rotate_left(){
+		console.log(laserkiwi.angle);
+	}
+	rotate_right(){
+		console.log(laserkiwi.angle);
 	}
 }
-let laserkiwi_img = document.getElementById("LaserKiwi");
+//let laserkiwi_img = document.getElementById("LaserKiwi");
 const laserkiwi = new LaserKiwi(ctx.canvas.width/2 - (50), ctx.canvas.height/2 - (50));
-laserkiwi_img.laserkiwi = document.getElementById("LaserKiwi");
+//laserkiwi_img.laserkiwi = document.getElementById("LaserKiwi");
 
 //Bullet SPRITE
 class Bullet {
 	constructor(x, y, angle){
 		this.x = x;
 		this.y = y;
+		var img = new Image();
+		img.src = "../laserkiwi/img/laser.png";
+		this.img = new Image();
+		this.img = img;
 		this.angle = angle;
-		let bullet_img = document.getElementById("Bullet");
-		bullet_img.bullet = document.getElementById("Bullet");
+		//let bullet_img = document.getElementById("Bullet");
+		//bullet_img.bullet = document.getElementById("Bullet");
 	}
 	deleteBullet(){
 		this.x = 9999;
@@ -84,42 +98,68 @@ class Bullet {
 		if (index > -1) {
 			bulletArray.splice(index, 1);
 		}
-		console.log("bullet Deleted");
-		console.log(this.x, this.y, bulletArray.length);
 	}
 }
-let bullet_img = document.getElementById("Bullet");
-bullet_img.bullet = document.getElementById("Bullet");
+//let bullet_img = document.getElementById("Bullet");
+//bullet_img.bullet = document.getElementById("Bullet");
 
 
 
 //NEW ZEALAND SPRITE
 class Aotearoa {
   constructor(health, x, y, path) {
+		var img = new Image();
+		img.src = "../laserkiwi/img/NZpixel.png";
+		this.img = new Image();
+		this.img = img;
     this.health = health;
-		let img = document.getElementById("Aotearoa");
-		img.aotearoa = document.getElementById("Aotearoa");
-		this.x = ctx.canvas.width/2 - (img.aotearoa.width/2)
-		this.y = ctx.canvas.height/2 - (img.aotearoa.height/2)
+		this.x = ctx.canvas.width/2 - (img.width/2)
+		this.y = ctx.canvas.height/2 - (img.height/2)
   }
 }
 
-let img = document.getElementById("Aotearoa");
 const aotearoa = new Aotearoa(AOTEAROA_HEALTH, AOTEAROA_X, AOTEAROA_Y, PATH_AOTEAROA);
-//aotearoa.x = ctx.canvas.width/2 - (img.aotearoa.naturalWidth/2)
 
 class Covid {
 	constructor(x, y){
+	var img = new Image();
+	img.src = "../laserkiwi/img/smallcovid.png";
+	this.img = new Image();
+	this.img = img;
 	this.x = x;
 	this.y = y;
-	let covid_img = document.getElementById("Covid");
-	covid_img = document.getElementById("Covid");
+	this.desinationX = 600;
+	this.desinationY = 100;
 	}
+ 	walk(){
+		this.x += Math.random() * (1 - -1) + -1;
+		this.y += Math.random() * (1 - -1) + -1;
+		if(this.x < this.desinationX) {
+			this.x += COVID_SPEED;
+		}
+		else {
+			this.x -= COVID_SPEED;
+		}
+		if(this.y < this.desinationY) {
+			this.y += COVID_SPEED;
+		}
+		else {
+			this.y -= COVID_SPEED;
+		}
+	}
+	delete(){
+		console.log("delete covid");
+		this.x = -9999;
+		this.y = -9999;
+
+		}
+
 }
 
-let covid_img = document.getElementById("Covid");
-const covid = new Covid(200,200);
-covid_img.covid = document.getElementById("Covid");
+//et covid_img = document.getElementById("Covid");
+//const covid = new Covid(200,200);
+//covidArray.push(covid);
+//covid_img.covid = document.getElementById("Covid");
 
 
 function preloading()
@@ -141,16 +181,35 @@ function preloading()
 function drawBackground() {
 
 	ctx.drawImage(background_image, 1, 1);
-	ctx.drawImage(img.aotearoa, aotearoa.x, aotearoa.y);
-	ctx.drawImage(laserkiwi_img.laserkiwi, laserkiwi.xpos, laserkiwi.ypos)
-	ctx.drawImage(covid_img.covid, covid.x, covid.y)
+	ctx.drawImage(aotearoa.img, aotearoa.x, aotearoa.y);
+	ctx.drawImage(laserkiwi.img, laserkiwi.xpos, laserkiwi.ypos)
+	//ctx.drawImage(covid.img, covid.x, covid.y)
+}
+
+function checkBulletCovid(){
+	for(i = 0; i < bulletArray.length; i++){
+		for(j = 0; j < covidArray.length; j++){
+			if((bulletArray[i].x > covidArray[j].x - covidArray[j].img.width) && (bulletArray[i].x < covidArray[j].x + covidArray[j].img.width)){
+				if((bulletArray[i].y > covidArray[j].y - covidArray[j].img.height) && (bulletArray[i].y < covidArray[j].y + covidArray[j].img.height)){
+
+					bulletArray[i].deleteBullet();
+					covidArray[j].delete();
+					const index = covidArray.indexOf(covidArray[j]);
+					if (index > -1) {
+						covidArray.splice(index, 1);
+					}
+
+				}
+			}
+		}
+	}
 }
 
 function moveBullets(){
 	for (i = 0; i < bulletArray.length; i++) {
 		bulletArray[i].x -= BULLET_SPEED * Math.cos(bulletArray[i].angle * Math.PI / 180)
     bulletArray[i].y += BULLET_SPEED * Math.sin(bulletArray[i].angle * Math.PI / 180)
-		ctx.drawImage(bullet_img, bulletArray[i].x, bulletArray[i].y)
+		ctx.drawImage(bulletArray[i].img, bulletArray[i].x, bulletArray[i].y)
 
 		if(bulletArray[i].x < - 5 || bulletArray[i].x > ctx.canvas.width || bulletArray[i].y < - 300 || bulletArray[i].y > ctx.canvas.height)
 		{
@@ -161,7 +220,29 @@ function moveBullets(){
 
 function createCovid(COVID_MAX_AMMOUNT)
 {
-	console.log(COVID_MAX_AMMOUNT);
+	for(i = 0; i < COVID_MAX_AMMOUNT; i++){
+		var num = Math.random() * (10 - 0) + 0;
+		var x = Math.random() * (-100 - -200) + -200;
+		var y = Math.random() * (ctx.canvas.height - 0) + 0;
+
+		if(num > 3){
+			var x = Math.random() * (ctx.canvas.width + 150 - ctx.canvas.width) + ctx.canvas.width;
+			var y = Math.random() * (ctx.canvas.height - 0) + 0;
+		}
+		if(num > 7){
+			var x = Math.random() * (ctx.canvas.width -0) + 0;
+			var y = Math.random() * (0 + -150) + -150;
+		}
+		if(num > 8){
+			var x = Math.random() * (ctx.canvas.width -0) + 0;
+			var y = Math.random() * (ctx.canvas.height + 150 - ctx.canvas.height) + ctx.canvas.height;
+		}
+
+		//STILL NEED TO SET CITY IT IS ATTACKING
+		const covid = new Covid(x,y);
+		covidArray.push(covid);
+
+	}
 }
 function startMessage(){
 	///PUT GAME INTRO HERE
@@ -177,7 +258,7 @@ function keyMovement()
 	{
 		laserkiwi.ypos -= LASERKIWI_SPEED;
 	}
-	else if (down && (laserkiwi.ypos < ctx.canvas.height - laserkiwi_img.laserkiwi.height))
+	else if (down && (laserkiwi.ypos < ctx.canvas.height - laserkiwi.img.height))
 	{
 		laserkiwi.ypos += LASERKIWI_SPEED;
 	}
@@ -185,9 +266,15 @@ function keyMovement()
 	{
 		laserkiwi.xpos -= LASERKIWI_SPEED;
 	}
-	else if (right && (laserkiwi.xpos < ctx.canvas.width - laserkiwi_img.laserkiwi.width))
+	else if (right && (laserkiwi.xpos < ctx.canvas.width - laserkiwi.img.width))
 	{
 		laserkiwi.xpos += LASERKIWI_SPEED;
+	}
+	else if (rotate_left){
+		laserkiwi.rotate_left();
+	}
+	else if (rotate_right){
+		laserkiwi.rotate_right();
 	}
 }
 
@@ -204,7 +291,7 @@ function keyDownHandler(event)
 	}
 	else if (keyPressed == "(")
 	{
-		if(laserkiwi.ypos < ctx.canvas.height - laserkiwi_img.laserkiwi.height)	{
+		if(laserkiwi.ypos < ctx.canvas.height - laserkiwi.img.height)	{
 			down = true;
 		}
 	}
@@ -218,11 +305,19 @@ function keyDownHandler(event)
 	}
 	else if (keyPressed == "'")
 	{
-		if(laserkiwi.xpos < ctx.canvas.width - laserkiwi_img.laserkiwi.width)
+		if(laserkiwi.xpos < ctx.canvas.width - laserkiwi.img.width)
 		{
 			//laserkiwi.xpos += LASERKIWI_SPEED;
 			right = true;
 		}
+	}
+	else if (keyPressed == "A")
+	{
+				rotate_left = true;
+	}
+	else if (keyPressed == "D")
+	{
+				rotate_right = true;
 	}
 }
 
@@ -250,6 +345,14 @@ function keyUpHandler(event)
 	{
 		right = false;
 	}
+	if (keyPressed == "A")
+	{
+		rotate_left = false;
+	}
+	if (keyPressed == "D")
+	{
+		rotate_right = false;
+	}
 }
 
 //------------
@@ -271,9 +374,24 @@ function update()
 	//Clear Canvas
 	//ctx.fillStyle = "grey";
 	keyMovement();
+	//console.log(aotearoa.img.width);
+
+	if(covidArray.length > 0) {
+		for(i = 0; i < covidArray.length; i++) {
+			covidArray[i].walk();
+		}
+	}
+	checkBulletCovid();
 
 	ctx.fillRect(0, 0, stage.width, stage.height);
 	drawBackground();
+	if(covidArray.length > 0) {
+		for(i = 0; i < covidArray.length; i++) {
+			//covidArray[i].walk();
+			ctx.drawImage(covidArray[i].img, covidArray[i].x, covidArray[i].y)
+		}
+	}
+
 	if(bulletArray.length > 0){
 		moveBullets();
 	}
