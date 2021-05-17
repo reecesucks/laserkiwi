@@ -1,0 +1,10 @@
+@font-face {
+	font-family: "retro_gaming";
+	font-style: normal;
+	font-weight: 400;
+	src: url("../assets/fonts/RetroGaming.ttf") format("truetype");;
+}
+
+body {
+    font-family: "retro_gaming";
+}
