@@ -269,6 +269,7 @@ class City {
 				this.infected = false;
 				laserkiwi.carryingVaccine = false;
 				laserkiwi.score += VACCINATION_POINTS;
+				laserkiwi.vaccinations += 1;
 				vaccine.setXY(150, boat.y + this.img.height/2);
 
 			}
@@ -337,6 +338,31 @@ class Vaccine {
 	}
 }
 
+class MusicController{
+	constructor(){
+		var img = new Image();
+		img.src = "../laserkiwi/img/musicbuttons.png"
+		this.img = new Image();
+		this.img = img;
+		this.x = ctx.canvas.width - this.img.width;
+		this.y= 0;
+		this.play = true;
+	}
+	play(){
+		console.log("Play music");
+	}
+	pause(){
+		console.log("pause music");
+	}
+	next(){
+		console.log("next song");
+	}
+	previous(){
+		conssole.log("previous song");
+	}
+}
+musicController = new MusicController();
+
 const boat = new Boat();
 const vaccine = new Vaccine();
 const flag = new Flag(400, 400);
@@ -350,7 +376,7 @@ function preloading()
 		//Initialise game
 		//facing = "E"; //N = North, E = East, S = South, W = West
 		//isMoving = false;
-
+		//introloop = setInterval(drawUpdateBackground, TIME_PER_FRAME);
 		gameloop = setInterval(update, TIME_PER_FRAME);
 		document.addEventListener("keydown",keyDownHandler, false);
 		document.addEventListener("keyup",keyUpHandler, false);
@@ -361,6 +387,7 @@ function drawBackground() {
 
 	ctx.drawImage(background_image, 0, 0);
 	ctx.drawImage(aotearoa.img, aotearoa.x, aotearoa.y);
+	drawMusicControls();
 	ctx.drawImage(boat.img, boat.x, boat.y);
 	for(var i = 0; i < citiesArray.length; i++){
 		citiesArray[i].draw()
@@ -596,7 +623,7 @@ function drawCovid (){
 			//covidArray[i].walk();
 			ctx.drawImage(covidArray[i].img, covidArray[i].x, covidArray[i].y)
 			if(covidArray[i].variant){
-				ctx.drawImage(covidArray[i].flag.img, covidArray[i].x + covidArray[1].img.width/4 -10, covidArray[i].y + covidArray[1].img.height/2 -10)
+				ctx.drawImage(covidArray[i].flag.img, covidArray[i].x + covidArray[i].img.width/4 -10, covidArray[i].y + covidArray[i].img.height/2 -10)
 			}
 		}
 	}
@@ -623,11 +650,20 @@ function getHealth () {
 	}
 }
 
+function drawMusicControls(){
+	ctx.drawImage(musicController.img, musicController.x, musicController.y);
+}
+
+function drawUpdateBackground(){
+	ctx.drawImage(update_background_image, 300, 0);
+	console.log('drawing background');
+}
+
 function startMessage(){
 
-	console.log("START MESSAGE")
-
 	createCovid(max);
+	console.log("I wanted to put the intro screen here but I'll do it in a seperate javascript file");
+
 }
 //------------
 //Key Handlers
@@ -800,21 +836,19 @@ startTimer = seconds.getTime() / 1000;
 
 function update()
 {
-
-	ctx.fillRect(0, 0, stage.width, stage.height);
-
+	//ctx.fillRect(0, 0, stage.width, stage.height);
 	drawBackground();
 
-
-
 	if(!intro) {
+		ctx.drawImage(update_background_image, 300, 0);
+
 		var seconds = new Date();
 		startTimer = seconds.getTime() / 1000;
+
 		startMessage();
 		sound("../laserkiwi/audio/bg_music_TheBeths.mp3");
 		sound.play();
 		intro = true;
-	//	console.log(startTimer);
 	}
 	//Clear Canvas
 	//ctx.fillStyle = "grey";
@@ -838,12 +872,10 @@ function update()
 
 	seconds = new Date();
 	time = seconds.getTime() / 1000;
-	if(time - startTimer  > 5){
+	if(time - startTimer  > BOAT_WAIT_TIME){
 		sendBoat();
 		boat.moving = true
 	}
-
-
 
 
 	setVaccine();
@@ -852,17 +884,13 @@ function update()
 	if(covidArray.length == 1){
 		createCovid(max);
 	}
-	var counter = 0;
-	counter++;
-
-
-
-
-
+	//var counter = 0;
+	//counter++;
+	//ctx.drawImage(update_background_image, 300, 0);
 
 
 	//ctx.beginPath();
-	//ctx.rect(laserkiwi.x - (Math.cos(laserkiwi.angle) * 30) -10 , laserkiwi.y - (Math.sin(laserkiwi.angle) * 30) -10 , 5, 5);
+	//ctx.rect(laserkiwi.x - (Math.cos(laserkiwi.angle) * 23), laserkiwi.y - (Math.sin(laserkiwi.angle) * 23), 5, 5);
 	//ctx.fillStyle = "black";
 	//ctx.fill();
 
