@@ -8,12 +8,15 @@ var ctx = stage.getContext("2d");
 ctx.fillStyle = "grey";
 ctx.font = GAME_FONTS;
 
+//highScoreNames = ['FIRSTT', 'test', 'test', 'test', 'test', 'test', 'test', 'test', 'test', 'test'];
+//highScores = [1235234, 123433, 234578, 56784, 2342453, 23413, 345345, 3452, 1232, 6547];
+
 
 const bulletArray = [];
 const covidArray = [];
 const citiesArray = [];
 const infectedCities = [];
-const flagArray = ["../laserkiwi/img/brz_flag.png", "../laserkiwi/img/eng_flag.png","../laserkiwi/img/ind_flag.png", "../laserkiwi/img/usa_flag.png"]
+const flagArray = ["../laserkiwi/img/brz_flag.png", "../laserkiwi/img/eng_flag.png","../laserkiwi/img/ind_flag.png", "../laserkiwi/img/usa_flag.png", "../laserkiwi/img/Nigeria_flag.png", "../laserkiwi/img/japan_flag.png", "../laserkiwi/img/SA-flag.png"]
 
 //Direction booleans
 var up = false;
@@ -26,6 +29,10 @@ var yes = false;
 
 var COVID_MAX_AMMOUNT = 5;
 var max = 5;
+
+var GAME_OVER = false;
+var HIGH_SCORE_INPUT = false;
+var NAME = ""
 
 //---------------
 //Preloading ...
@@ -51,6 +58,8 @@ messageBoxBackground.src = "../laserkiwi/img/covid_stripes.png";
 
 var ashleyBloomfield = new Image();
 ashleyBloomfield.src = "../laserkiwi/img/ashley.png";
+
+const playlist = ["../laserkiwi/audio/bg_music_TheBeths.mp3", "../laserkiwi/audio/background_music.mp3"];
 
 function setAssetReady()
 {
@@ -311,6 +320,7 @@ class Boat {
 		this.y= aotearoa.y + (aotearoa.img.height / 4) + 50;
 		this.carryingVaccine = true;
 		this.moving = false;
+		this.track = 1; // random int for playlist
 	}
 }
 
@@ -347,18 +357,50 @@ class MusicController{
 		this.x = ctx.canvas.width - this.img.width;
 		this.y= 0;
 		this.play = true;
+		this.track = Math.floor(Math.random() * (playlist.length - 0) + 0);
 	}
-	play(){
-		console.log("Play music");
+	playMusic(){
+		console.log("Play music", playlist[this.track]);
+		this.sound(playlist[this.track]);
+		this.song.play();
 	}
 	pause(){
 		console.log("pause music");
+		this.sound.pause;
 	}
 	next(){
-		console.log("next song");
+		if(this.track + 1 < playlist.length){
+				this.track +=1;
+		}
+		else {
+			this.track = 0
+		}
+		this.song.pause(); //probably wont work
+		this.playMusic();
 	}
 	previous(){
-		conssole.log("previous song");
+		if(this.track - 1 >= 0){
+				this.track -=1;
+		}
+		else {
+			this.track = playlist.length - 1;
+		}
+		this.song.pause(); //probably wont work
+		this.playMusic();
+	}
+	sound(src) {
+	  this.song = document.createElement("audio");
+	  this.song.src = src;
+	  this.song.setAttribute("preload", "auto");
+	  this.song.setAttribute("controls", "none");
+	  this.song.style.display = "none";
+	 // document.body.appendChild(this.sound);
+	  this.play = function(){
+	    this.song.play();
+	  }
+	  this.stop = function(){
+	    this.song.pause();
+	  }
 	}
 }
 musicController = new MusicController();
@@ -380,6 +422,7 @@ function preloading()
 		gameloop = setInterval(update, TIME_PER_FRAME);
 		document.addEventListener("keydown",keyDownHandler, false);
 		document.addEventListener("keyup",keyUpHandler, false);
+		document.addEventListener("click", clickHander, false);
 	}
 }
 
@@ -432,7 +475,34 @@ function drawMessageBox() {
 		}
 
 	}
+	else{
+	    drawHighScore();
+	}
 }
+
+function drawHighScore(){
+	var spacing = 0;
+	ctx.beginPath();
+	ctx.font = "30px retro_gaming";
+	ctx.fillStyle = "black";
+	ctx.fillText("High Scores", 40, ctx.canvas.height - messageBoxBackground.height + 55);
+	spacing += 20;
+	ctx.font = "25px retro_gaming";
+
+	ctx.fillText("1. " + highScoreNames[0], 30, ctx.canvas.height - 230 + spacing);
+	ctx.fillText(highScoreScores[0], 177, ctx.canvas.height - 230 + spacing);
+
+	for (var i = 1; i < highScoreScores.length; i++){
+		ctx.beginPath();
+		ctx.font = "17px retro_gaming";
+		ctx.fillStyle = "black";
+		ctx.fillText((i + 1) + ". " + highScoreNames[i], 21, ctx.canvas.height - 200 + spacing);
+		ctx.fillText(highScoreScores[i], 190, ctx.canvas.height - 200 + spacing);
+		spacing += 20;
+	}
+
+}
+
 
 function checkCollion(obj1, obj2){
 		if (obj1.x  > obj2.x + obj2.img.width/2 -70 && obj1.x + obj1.img.width/2 < obj2.x + obj2.img.width/2  + 70){
@@ -441,6 +511,8 @@ function checkCollion(obj1, obj2){
 			}
 		}
 	}
+
+
 
 function checkBulletCovid(){
 	for(i = 0; i < bulletArray.length; i++){
@@ -456,7 +528,6 @@ function checkBulletCovid(){
 						if (index > -1) {
 							covidArray.splice(index, 1);
 						}
-						console.log(covidArray.length);
 					}
 					if(covidArray[j].variant && covidArray[j].hitCount > 2){
 						laserkiwi.score += VARIANT_COVID_POINTS;
@@ -648,6 +719,10 @@ function getHealth () {
 			aotearoa.health +=1;
 		}
 	}
+	
+	if(aotearoa.health <= 0){
+	    GAME_OVER = true;
+	}
 }
 
 function drawMusicControls(){
@@ -656,20 +731,19 @@ function drawMusicControls(){
 
 function drawUpdateBackground(){
 	ctx.drawImage(update_background_image, 300, 0);
-	console.log('drawing background');
 }
 
 function startMessage(){
-
+	//lert("arrow keys to move \n 'a' and 'd' keys to rotate \n space bar to shoot");
 	createCovid(max);
-	console.log("I wanted to put the intro screen here but I'll do it in a seperate javascript file");
+	console.log("Wow so excited that someone is actually looking at my portflio. github.com/reecesucks Hire me. reece@reecesucks.com 022 531 0974");
 
 }
 //------------
 //Key Handlers
 //------------
 function sendBoat(){
-	if(boat.moving && boat.carryingVaccine && boat.x < 530){
+	if(boat.moving && boat.carryingVaccine && boat.x < aotearoa.x){
 		boat.x += BOAT_SPEED;
 	} else if (boat.carryingVaccine)
 	{
@@ -701,21 +775,47 @@ function setVaccine(){
 	}
 }
 
-//SOUND EFFECTS
-function sound(src) {
-  this.sound = document.createElement("audio");
-  this.sound.src = src;
-  this.sound.setAttribute("preload", "auto");
-  this.sound.setAttribute("controls", "none");
-  this.sound.style.display = "none";
-  document.body.appendChild(this.sound);
-  this.play = function(){
-    this.sound.play();
-  }
-  this.stop = function(){
-    this.sound.pause();
-  }
+function gameOver(){
+    if(!HIGH_SCORE_INPUT){
+        
+        //var txt;
+        var NAME = prompt("Enter your name to record your high score");
+        //if (NAME == null || NAME == "" || NAME.length > 7) {
+        //txt = "User cancelled the prompt.";
+        //} else {
+        //txt = "Hello " + NAME + "! How are you today?";
+        //}
+        //document.getElementById("root").innerHTML = txt;
+        if(NAME.length > 12){
+            NAME = NAME.substring(0, NAME.length - (NAME.length - 12));
+            console.log("short name");
+        }
+        HIGH_SCORE_INPUT = true;
+        if(laserkiwi.score > highScoreScores[highScoreScores.length -1]){
+            sendScoreToServer(NAME, laserkiwi.score);
+        }
+        window.setTimeout(function(){
+        window.location.href = "https://reecesucks.com/laserkiwi/index.php";
+    }, 3000);
+    }
+    console.log("gameover", NAME, laserkiwi.score);
+   
 }
+
+function sendScoreToServer(name, score) {
+    console.log("sending score to server", name, score);
+    $.ajax({
+        type: "POST",
+        url: "SaveToDB.php",
+        data: { "name": name, "score":score},
+        dataType: 'json',
+        success: function(response){
+            console.log(response);
+            $('#result').html('The score returned by the server is: '+response.scoreDoubled);    
+        }
+    });   
+}
+
 
 function keyMovement()
 {
@@ -740,6 +840,22 @@ function keyMovement()
 	}
 	if (rotate_right){
 		laserkiwi.rotate_right();
+	}
+}
+
+function clickHander(event){
+	var x = event.clientX;
+	var y = event.clientY;
+	if(y < musicController.img.height) {
+		if(x > ctx.canvas.width - musicController.img.width && x < (ctx.canvas.width - 2 * (musicController.img.width / 3)) ){
+			musicController.previous();
+		}
+		if(x > (ctx.canvas.width - 2 * (musicController.img.width / 3)) && x < (ctx.canvas.width - (musicController.img.width / 3)) ){
+			musicController.playMusic();
+		}
+		if(x > ctx.canvas.width - (musicController.img.width / 3) && x < ctx.canvas.width){
+			musicController.next();
+		}
 	}
 }
 
@@ -820,18 +936,9 @@ function keyUpHandler(event)
 	}
 }
 
-//------------
-//Game Loop
-//------------
-//charX = CHAR_START_X;
-//charY = CHAR_START_Y;
-
-//currX = IMAGE_START_X;
-//currY = IMAGE_START_EAST_Y;
-
 var intro = false;
 var seconds = new Date();
-startTimer = seconds.getTime() / 1000;
+//startTimer = seconds.getTime() / 1000;
 
 
 function update()
@@ -839,15 +946,15 @@ function update()
 	//ctx.fillRect(0, 0, stage.width, stage.height);
 	drawBackground();
 
-	if(!intro) {
-		ctx.drawImage(update_background_image, 300, 0);
+	if(!intro && STARTING_MESSAGE) {
+		//ctx.drawImage(update_background_image, 300, 0);
 
 		var seconds = new Date();
 		startTimer = seconds.getTime() / 1000;
 
 		startMessage();
-		sound("../laserkiwi/audio/bg_music_TheBeths.mp3");
-		sound.play();
+		//sound("../laserkiwi/audio/bg_music_TheBeths.mp3");
+		//sound.play();
 		intro = true;
 	}
 	//Clear Canvas
@@ -861,13 +968,6 @@ function update()
 	}
 
 	checkBulletCovid();
-
-
-	//ctx.fillRect(0, 0, stage.width, stage.height);
-
-
-
-
 	checkCityCovid();
 
 	seconds = new Date();
@@ -876,22 +976,20 @@ function update()
 		sendBoat();
 		boat.moving = true
 	}
-
-
 	setVaccine();
 	getHealth();
 
 	if(covidArray.length == 1){
 		createCovid(max);
 	}
-	//var counter = 0;
-	//counter++;
-	//ctx.drawImage(update_background_image, 300, 0);
+	
+	if(GAME_OVER){
+	    gameOver();
+	}
 
-
+	//console.log(STARTING_MESSAGE);
 	//ctx.beginPath();
 	//ctx.rect(laserkiwi.x - (Math.cos(laserkiwi.angle) * 23), laserkiwi.y - (Math.sin(laserkiwi.angle) * 23), 5, 5);
 	//ctx.fillStyle = "black";
 	//ctx.fill();
-
 }
