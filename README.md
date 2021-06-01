@@ -1,7 +1,7 @@
 # laserkiwi
 Pygame arcade style game
 
-playable now at reecesucks.com/laserkiwi.index.html
+playable now at reecesucks.com/laserkiwi/index.html
 arrow keys for movement
 a and d to rotate
 space bar to shoot
@@ -11,7 +11,7 @@ In the meantime, making it playable in browser using javascript.
 Running okay.
 
 TO DO:
-  -intro explaining controls
+  -intro/explaining controls
   -music control box
  
   
